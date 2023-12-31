@@ -21,13 +21,13 @@ async def on_ready():
   sync_status = await tree.sync()
   for command in sync_status:
     print(f"Synced {command.name} command.")
-  
-  await StorageHandler()
+
   print("Bot started.")
+  await StorageHandler()
 
 @tree.command(name="play", description="Play music.")
 async def play(ctx: discord.Interaction, link: str):
-  return await Commands.main_music(ctx, link)
+  await Commands.main_music(ctx, link)
 
 @tree.command(name="skip", description="Skip songs.")
 async def skip(ctx: discord.Interaction, songnumber: str=None):
