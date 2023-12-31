@@ -13,9 +13,9 @@ class Commands:
     else:
       return channel_result      
 
-    #linkIsValid = await YTDownload.check_for_valid_link(link)
-    #if not linkIsValid:
-    #  return await ctx.response.send_message("Automatic checks determined the submitted link was not valid, please try again.")
+    linkIsValid = await YTDownload.check_for_valid_link(link)
+    if not linkIsValid:
+      return await ctx.response.send_message("Automatic checks determined the submitted link was not valid, please try again.")
 
     guild = ctx.guild
     
@@ -53,6 +53,7 @@ class Commands:
 
     if Music.isPlaying:
       Music.add_to_queue(song)
+      await ctx.followup.send(f"Added {song.title} by {song.author} to queue.\n")
     else:
       Music.add_to_queue(song)
       await Music.play(ctx, channel, song)
@@ -118,3 +119,12 @@ class Commands:
         return await ctx.response.send_message(f"There are currently no songs queued.")
       else:
         return await ctx.response.send_message(f"There are currently {len(Music.queue)} songs queued.")
+      
+  async def kill(ctx: discord.Interaction):
+    guild = ctx.guild
+    guild.voice_client.stop()
+    guild.voice_client.disconnect()
+
+    Music.queue = []
+    Music.isPlaying = False
+    Music.isJestersCurseActive = False
