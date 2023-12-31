@@ -1,11 +1,12 @@
 import discord
 import discord.ext
-from discord.ext.commands import has_permissions
 import os
-from dotenv import load_dotenv
 
+from dotenv import load_dotenv
 from discord import app_commands
 from components.Discord.discord_commands import Commands
+from components.storage_handler import StorageHandler
+from discord.ext.commands import has_permissions
 
 intents = discord.Intents.all()
 client = discord.Client(intents=intents)
@@ -20,6 +21,8 @@ async def on_ready():
   sync_status = await tree.sync()
   for command in sync_status:
     print(f"Synced {command.name} command.")
+  
+  await StorageHandler()
   print("Bot started.")
 
 @tree.command(name="play", description="Play music.")
