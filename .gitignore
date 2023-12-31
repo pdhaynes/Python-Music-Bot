@@ -7,8 +7,8 @@ __pycache__/
 *.so
 
 *.env
-.cpython
-.mp3
+*.cpython
+*.mp3
 
 # Distribution / packaging
 .Python
