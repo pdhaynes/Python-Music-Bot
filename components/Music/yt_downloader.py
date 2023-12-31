@@ -10,10 +10,11 @@ class YTDownloader:
     self.restricted_chars = ["?", "/", "\\", "(", ")", "|"]
 
   async def check_for_valid_link(self, link):
-    youtube_regex = ("?:v=|\/)([0-9A-Za-z_-]{11}")
+    #youtube_regex = ("?:v=|\/)([0-9A-Za-z_-]{11}")
 
-    youtube_match = re.match(youtube_regex, link)
-    return bool(youtube_match)
+    #outube_match = re.match(youtube_regex, link)
+    #return bool(youtube_match)
+    pass
 
   async def download_song(self, link):
     youtube_info = YouTube(link)

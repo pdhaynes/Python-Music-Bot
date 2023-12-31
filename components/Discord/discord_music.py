@@ -61,6 +61,11 @@ class DiscordMusic:
     guild.voice_client.play(discord.FFmpegPCMAudio(song.path))
     self.currentMusicTask = await asyncio.sleep(song.length)
     self.queue.pop(0)
+    if len(self.queue) > 0:
+      await self.play(ctx, channel, self.queue[0])
+
+    elif self.queue == []:
+      self.isPlaying = False
 
   def add_to_queue(self, song):
     self.queue.append(song)

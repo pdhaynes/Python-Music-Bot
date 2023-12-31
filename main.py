@@ -3,6 +3,7 @@ import discord.ext
 import os
 from dotenv import load_dotenv
 
+from discord import app_commands
 from components.Discord.discord_commands import Commands
 
 intents = discord.Intents.all()
@@ -28,9 +29,11 @@ async def play(ctx: discord.Interaction, link: str):
 async def skip(ctx: discord.Interaction, songnumber: str=None):
   await Commands.skip(ctx, songnumber)
 
-@tree.command(name="queue", description="View the currently queued songs.")
-async def queue(ctx: discord.Interaction):
-  await Commands.queue(ctx)
+@tree.command(name="queue", description="View the first 5 queued songs.")
+@app_commands.choices(choices=[app_commands.Choice(name="Check queue length", value="qlength"),
+                               app_commands.Choice(name="List queue", value="listq")])
+async def queue(ctx: discord.Interaction, choices: app_commands.Choice[str]):
+  await Commands.queue(ctx, choices)
 
 if __name__ == "__main__":
   client.run(BOT_TOKEN)

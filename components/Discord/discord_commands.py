@@ -56,8 +56,8 @@ class Commands:
     else:
       Music.add_to_queue(song)
       await Music.play(ctx, channel, song)
-      if len(Music.queue) > 1:
-        await Music.play(ctx, channel, Music.queue[0])
+      #if len(Music.queue) > 1:
+      #  await Music.play(ctx, channel, Music.queue[0])
 
   async def skip(ctx: discord.Interaction, song_index: str):
     channel_result = await Music.check_for_channel(ctx)
@@ -93,7 +93,7 @@ class Commands:
       if song_index == 0:
         guild.voice_client.stop()
         if len(Music.queue) > 1:
-          song = Music.remove_from_queue(song_index)
+          #song = Music.remove_from_queue(song_index)
           await ctx.followup.send(f"Skipped {song.title}.")
           await Music.play(ctx, channel, Music.queue[0])
       else:
@@ -101,11 +101,20 @@ class Commands:
         song = Music.remove_from_queue(song_index)
         return await ctx.followup.send(f"Skipped {song.title}.")
       
-  async def queue(ctx: discord.Interaction):
-    #print(len(Music.queue) / 5)
-    first_five_songs = [song for song in Music.queue[:5]]
-    return_text = []
-    for index, song in enumerate(first_five_songs):
-      return_text.append(f"{index + 1}: {song.title} by {song.author}\n")
-    return_text = "".join(return_text)
-    return await ctx.response.send_message(return_text)
+  async def queue(ctx: discord.Interaction, choices: discord.app_commands.Choice[str]):
+    if choices.value == "listq":
+      if len(Music.queue) == 0:
+        return await ctx.response.send_message("No songs in queue.") 
+      #print(len(Music.queue) / 5)
+      first_five_songs = [song for song in Music.queue[:5]]
+      return_text = []
+      for index, song in enumerate(first_five_songs):
+        return_text.append(f"{index + 1}: {song.title} by {song.author}\n")
+      return_text = "".join(return_text)
+      return await ctx.response.send_message(return_text)
+    
+    elif choices.value == "qlength":
+      if len(Music.queue) == 0:
+        return await ctx.response.send_message(f"There are currently no songs queued.")
+      else:
+        return await ctx.response.send_message(f"There are currently {len(Music.queue)} songs queued.")
