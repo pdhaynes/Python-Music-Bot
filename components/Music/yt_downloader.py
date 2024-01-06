@@ -15,7 +15,7 @@ class YTDownloader:
     youtube_match = re.match(youtube_regex, link)
     return bool(youtube_match)
 
-  async def download_song(self, link):
+  async def download_song_by_link(self, link):
     youtube_info = YouTube(link)
 
     title = self.clean_title(youtube_info.title.title())

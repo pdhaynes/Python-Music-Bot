@@ -1,25 +1,38 @@
 import discord
 from components.Discord.discord_music import DiscordMusic
 from components.Music.yt_downloader import YTDownloader
+import urllib.request
+import re
 
 Music = DiscordMusic()
 YTDownload = YTDownloader()
 
 class Commands:
-  async def main_music(ctx: discord.Interaction, link: str = None):
+  async def main_music(ctx: discord.Interaction, link: str = None, query:str = None):
+    if link != None and query != None:
+      return await ctx.response.send_message("Submit a link or a query, not both.")
+    
     channel_result = await Music.check_for_channel(ctx)
     if type(channel_result) == discord.channel.VoiceChannel:
       channel = channel_result
     else:
       return channel_result      
 
-    linkIsValid = await YTDownload.check_for_valid_link(link)
-    if not linkIsValid:
-      return await ctx.response.send_message("Automatic checks determined the submitted link was not valid, please try again.")
-
     guild = ctx.guild
     
     await ctx.response.defer(ephemeral=True)
+
+    if link != None:
+      linkIsValid = await YTDownload.check_for_valid_link(link)
+      if not linkIsValid:
+        return await ctx.response.send_message("Automatic checks determined the submitted link was not valid, please try again.")
+
+    if query != None:
+      query = query.replace(" ", "%20")
+      html = urllib.request.urlopen(f"https://www.youtube.com/results?search_query={query}")
+      video_ids = re.findall(r"watch\?v=([a-zA-Z0-9_-]{11})", html.read().decode())
+      link = "https://ww.youtube.com/watch?v=" + video_ids[0]
+      song = await YTDownload.download_song_by_link(link)
 
     jester_check = await Music.check_for_jester(ctx)
     if jester_check:
@@ -27,7 +40,7 @@ class Commands:
       if enact_jesters_curse:
         print("[Jester's Curse] Reece lost against the odds.")
         await ctx.followup.send("The Jester's Curse!")
-        song = await YTDownload.download_song("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+        song = await YTDownload.download_song_by_link("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
         song.jesters_curse = True
         if guild.voice_client == None:
           await channel.connect()
@@ -39,11 +52,7 @@ class Commands:
           return await Music.play(ctx, channel, song)
       else:
         print("Reece beat the odds, playing his song.")
-        song = await YTDownload.download_song(link)
-    elif link != None:
-      song = await YTDownload.download_song(link)
-    else:
-      raise Exception("Uncaught possibility found within play functioon")
+        song = await YTDownload.download_song_by_link(link)
 
     length_check = await Music.check_song_length(ctx, song)
     if type(length_check) == bool:
@@ -57,8 +66,6 @@ class Commands:
     else:
       Music.add_to_queue(song)
       await Music.play(ctx, channel, song)
-      #if len(Music.queue) > 1:
-      #  await Music.play(ctx, channel, Music.queue[0])
 
   async def skip(ctx: discord.Interaction, song_index: str):
     channel_result = await Music.check_for_channel(ctx)
@@ -94,7 +101,7 @@ class Commands:
       if song_index == 0:
         guild.voice_client.stop()
         if len(Music.queue) > 1:
-          #song = Music.remove_from_queue(song_index)
+          song = Music.queue.pop(0)
           await ctx.followup.send(f"Skipped {song.title}.")
           await Music.play(ctx, channel, Music.queue[0])
       else:
@@ -121,10 +128,32 @@ class Commands:
         return await ctx.response.send_message(f"There are currently {len(Music.queue)} songs queued.")
       
   async def kill(ctx: discord.Interaction):
+    if ctx.user.name != "sirkillurass":
+      return await ctx.response.send_message("Who do you think you are.")    
+    
     guild = ctx.guild
-    guild.voice_client.stop()
-    guild.voice_client.disconnect()
+
+    channel_result = await Music.check_for_channel(ctx)
+    if type(channel_result) == discord.channel.VoiceChannel:
+      channel = channel_result
+    else:
+      return channel_result      
+
+    if guild.voice_client:
+      await guild.voice_client.disconnect()
+      #guild.voice_client.stop()
 
     Music.queue = []
     Music.isPlaying = False
     Music.isJestersCurseActive = False
+
+    return await ctx.response.send_message("Killed the bot.")
+  
+def admin_queue():
+  if len(Music.queue) == 0:
+    return {"message": "There are currently no songs in queue."}
+    
+  return_text = []
+  for index, song in enumerate(Music.queue):
+    return_text.append({"position": f"{index + 1}", "title": f"{song.title}", "author": f"{song.author}", "length": f"{song.length}"})
+  return return_text

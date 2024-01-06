@@ -1,6 +1,7 @@
 import discord
 import random
 import asyncio
+import time
 
 class DiscordMusic:
   def __init__(self):
@@ -8,6 +9,7 @@ class DiscordMusic:
     self.isJestersCurseActive = False
     self.canSkipMusic = True
     self.currentMusicTask = None
+    self.lastSongPlayTime = None
 
     self.queue = []
 
@@ -42,6 +44,7 @@ class DiscordMusic:
     
   async def play(self, ctx: discord.Interaction, channel, song):
     self.isPlaying = True
+    self.lastSongPlayTime = time.time()
     guild = ctx.guild
 
     if song.jesters_curse:
@@ -59,13 +62,14 @@ class DiscordMusic:
       await channel.connect()
 
     guild.voice_client.play(discord.FFmpegPCMAudio(song.path))
-    self.currentMusicTask = await asyncio.sleep(song.length)
+    self.currentMusicTask = await asyncio.sleep(song.length + 1)
     self.queue.pop(0)
     if len(self.queue) > 0:
       await self.play(ctx, channel, self.queue[0])
 
     elif self.queue == []:
       self.isPlaying = False
+      await self.timeout_check(ctx)
 
   def add_to_queue(self, song):
     self.queue.append(song)
@@ -73,3 +77,12 @@ class DiscordMusic:
 
   def remove_from_queue(self, index):
     return self.queue.pop(index)
+
+  async def timeout_check(self, ctx: discord.Interaction):
+    guild = ctx.guild
+
+    if self.lastSongPlayTime != None:
+      elapsed_time = time.time() - self.lastSongPlayTime
+      if elapsed_time > 600:
+        if guild.voice_client:
+          await guild.voice_client.disconnect()
