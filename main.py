@@ -7,13 +7,11 @@ from discord import app_commands
 from components.Discord.discord_commands import Commands
 from components.storage_handler import StorageHandler
 from discord.ext.commands import has_permissions
-from components.Discord.admin_gui import AdminGUI
 
 intents = discord.Intents.all()
 client = discord.Client(intents=intents)
 tree = discord.app_commands.CommandTree(client)
 storagehandler = StorageHandler()
-#admingui = AdminGUI()
 
 load_dotenv(dotenv_path="secrets.env")
 
@@ -26,7 +24,6 @@ async def on_ready():
     print(f"Synced {command.name} command.")
 
   print("Bot started.")
-  #await admingui.main()
   await storagehandler.clean_up() 
 
 @tree.command(name="play", description="Play music.")

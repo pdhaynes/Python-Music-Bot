@@ -148,12 +148,3 @@ class Commands:
     Music.isJestersCurseActive = False
 
     return await ctx.response.send_message("Killed the bot.")
-  
-def admin_queue():
-  if len(Music.queue) == 0:
-    return {"message": "There are currently no songs in queue."}
-    
-  return_text = []
-  for index, song in enumerate(Music.queue):
-    return_text.append({"position": f"{index + 1}", "title": f"{song.title}", "author": f"{song.author}", "length": f"{song.length}"})
-  return return_text
