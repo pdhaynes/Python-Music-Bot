@@ -10,3 +10,6 @@
 
 # Non production test files
 test.py
+
+# sensitive .json files
+*.json
