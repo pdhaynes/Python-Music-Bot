@@ -26,6 +26,7 @@ class Commands:
       linkIsValid = await YTDownload.check_for_valid_link(link)
       if not linkIsValid:
         return await ctx.response.send_message("Automatic checks determined the submitted link was not valid, please try again.")
+      song = await YTDownload.download_song_by_link(link)
 
     if query != None:
       query = query.replace(" ", "%20")
