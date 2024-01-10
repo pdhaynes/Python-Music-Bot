@@ -41,9 +41,20 @@ async def queue(ctx: discord.Interaction, choices: app_commands.Choice[str]):
   await Commands.queue(ctx, choices)
 
 @tree.command(name="kill", description="Disconnect the bot and stop all music.")
-@has_permissions(administrator=True)
 async def kill(ctx: discord.Interaction):
   await Commands.kill(ctx)
+
+@tree.command(name="socialcredit", description="View information about your social credit score.")
+@app_commands.choices(choices=[app_commands.Choice(name="Check Credit", value="creditcheck")])
+async def social_credit(ctx: discord.Interaction, choices: discord.app_commands.Choice[str]):
+  await Commands.social_credit(ctx, choices)
+
+@tree.command(name="adminsocialcredit", description="Admin facing commands to manage social credit score.")
+@app_commands.choices(choices=[app_commands.Choice(name="Add Credit", value="addcredit"),
+                               app_commands.Choice(name="Subtract Credit", value="subcredit"),
+                               app_commands.Choice(name="First Time Setup", value="setup")])
+async def admin_social_credit(ctx: discord.Interaction, choices: discord.app_commands.Choice[str], user_id: str = None, credit_amt: int = None):
+  await Commands.admin_social_credit(ctx, choices, client, user_id, credit_amt)
 
 if __name__ == "__main__":
   client.run(BOT_TOKEN)
