@@ -1,11 +1,18 @@
 import discord
 from components.Discord.discord_music import DiscordMusic
 from components.Music.yt_downloader import YTDownloader
+from components.Admin.admin_object import AdminObject
+from components.SocialCredit.social_credit_handler import SocialCreditHandler
 import urllib.request
 import re
+import random
 
 Music = DiscordMusic()
 YTDownload = YTDownloader()
+Admin = AdminObject()
+SocialCredit = SocialCreditHandler()
+
+negative_response_list = ["Get fucked.", "Kick bricks.", "Who do you think you are?", "Accessing admin panel. Just fucking kidding.", ":P", "Me when the thing I coded to do a thing does a thing: :D", "Fuck you Reece", "Erm, what do you think ur doing?"]
 
 class Commands:
   async def main_music(ctx: discord.Interaction, link: str = None, query:str = None):
@@ -129,8 +136,9 @@ class Commands:
         return await ctx.response.send_message(f"There are currently {len(Music.queue)} songs queued.")
       
   async def kill(ctx: discord.Interaction):
-    if ctx.user.name != "sirkillurass":
-      return await ctx.response.send_message("Who do you think you are.")    
+    if not await Admin.isAdmin(ctx.user.name):
+      num = random.randint(0, len(negative_response_list) - 1)
+      return await ctx.response.send_message(negative_response_list[num])    
     
     guild = ctx.guild
 
@@ -149,3 +157,39 @@ class Commands:
     Music.isJestersCurseActive = False
 
     return await ctx.response.send_message("Killed the bot.")
+  
+  async def social_credit(ctx: discord.Interaction, choices: discord.app_commands.Choice[str]):
+    user_id = ctx.user.id
+    if choices.value == "creditcheck":
+      return await ctx.response.send_message(await SocialCredit.return_credit(user_id))
+
+  async def admin_social_credit(ctx: discord.Interaction, choices: discord.app_commands.Choice[str], client: discord.Client, user_id: str, credit_amt):
+    if not await Admin.isAdmin(ctx.user.name):
+      num = random.randint(0, len(negative_response_list) - 1)
+      return await ctx.response.send_message(negative_response_list[num])   
+    
+    if user_id != None:
+      cleaned_list = []
+      id_list = [char for char in user_id]
+      for num in id_list:
+        try:
+          int(num)
+          cleaned_list.append(num)
+        except:
+          pass
+
+      user_id = "".join(cleaned_list)
+      print(user_id)
+
+    if choices.value == "addcredit":
+      return await ctx.response.send_message(await SocialCredit.add_credit(user_id, credit_amt))
+    
+    if choices.value == "subcredit":
+      return await ctx.response.send_message(await SocialCredit.subtract_credit(user_id, credit_amt))
+
+    if choices.value == "setup":
+      user_list = []
+      for guild in client.guilds:
+        for member in guild.members:
+          user_list.append({"name": member.name, "id": member.id})
+      return await ctx.response.send_message(await SocialCredit.first_time_setup(user_list))
