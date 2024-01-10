@@ -87,8 +87,9 @@ class DiscordMusic:
       if elapsed_time > 600:
         print("[Timeout Check] More than 10 minutes have passed since a played song, disconnecting bot.")
         if guild.voice_client:
+          self.lastSongPlayTime = None
           return await guild.voice_client.disconnect()
       
       print(f"[Timeout Check] Time since last song: {round(elapsed_time, 1)}s")
-    await asyncio.sleep(60 * 3) # 3 minutes
-    await self.timeout_check(ctx)
+      await asyncio.sleep(60 * 3) # 3 minutes
+      await self.timeout_check(ctx)
