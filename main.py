@@ -27,8 +27,8 @@ async def on_ready():
   await storagehandler.clean_up() 
 
 @tree.command(name="play", description="Play music.")
-async def play(ctx: discord.Interaction, link: str = None, query: str = None):
-  await Commands.main_music(ctx, link, query)
+async def play(ctx: discord.Interaction, song_request: str = None):
+  await Commands.main_music(ctx, song_request)
 
 @tree.command(name="skip", description="Skip songs.")
 async def skip(ctx: discord.Interaction, songnumber: str=None):

@@ -15,10 +15,7 @@ SocialCredit = SocialCreditHandler()
 negative_response_list = ["Get fucked.", "Kick bricks.", "Who do you think you are?", "Accessing admin panel. Just fucking kidding.", ":P", "Me when the thing I coded to do a thing does a thing: :D", "Fuck you Reece", "Erm, what do you think ur doing?"]
 
 class Commands:
-  async def main_music(ctx: discord.Interaction, link: str = None, query:str = None):
-    if link != None and query != None:
-      return await ctx.response.send_message("Submit a link or a query, not both.")
-    
+  async def main_music(ctx: discord.Interaction, song_request: str = None):
     channel_result = await Music.check_for_channel(ctx)
     if type(channel_result) == discord.channel.VoiceChannel:
       channel = channel_result
@@ -28,20 +25,7 @@ class Commands:
     guild = ctx.guild
     
     await ctx.response.defer(ephemeral=True)
-
-    if link != None:
-      linkIsValid = await YTDownload.check_for_valid_link(link)
-      if not linkIsValid:
-        return await ctx.response.send_message("Automatic checks determined the submitted link was not valid, please try again.")
-      song = await YTDownload.download_song_by_link(link)
-
-    if query != None:
-      query = query.replace(" ", "%20")
-      html = urllib.request.urlopen(f"https://www.youtube.com/results?search_query={query}")
-      video_ids = re.findall(r"watch\?v=([a-zA-Z0-9_-]{11})", html.read().decode())
-      link = "https://ww.youtube.com/watch?v=" + video_ids[0]
-      song = await YTDownload.download_song_by_link(link)
-
+    
     jester_check = await Music.check_for_jester(ctx)
     if jester_check:
       enact_jesters_curse = await Music.roll_jesters_curse()
@@ -60,6 +44,18 @@ class Commands:
           return await Music.play(ctx, channel, song)
       else:
         print("Reece beat the odds, playing his song.")
+        song = await YTDownload.download_song_by_link(song_request)
+
+    if song_request != None:
+      linkIsValid = await YTDownload.check_for_valid_link(song_request)
+      linkIsValid = "youtube.com" in song_request
+      if linkIsValid:
+        song = await YTDownload.download_song_by_link(song_request)
+      else:
+        song_request = song_request.replace(" ", "%20")
+        html = urllib.request.urlopen(f"https://www.youtube.com/results?search_query={song_request}")
+        video_ids = re.findall(r"watch\?v=([a-zA-Z0-9_-]{11})", html.read().decode())
+        link = "https://ww.youtube.com/watch?v=" + video_ids[0]
         song = await YTDownload.download_song_by_link(link)
 
     length_check = await Music.check_song_length(ctx, song)
@@ -110,11 +106,19 @@ class Commands:
         guild.voice_client.stop()
         if len(Music.queue) > 1:
           song = Music.queue.pop(0)
-          await ctx.followup.send(f"Skipped {song.title}.")
+          Music.remove_from_queue(0)
           await Music.play(ctx, channel, Music.queue[0])
+          return await ctx.followup.send(f"Skipped {song.title}.")
+        
+        else:
+          Music.isPlaying = False
+          song = Music.queue.pop(0)
+          return await ctx.followup.send(f"Skipped {song.title}.")
+        
       else:
         Music.isPlaying = False
         song = Music.remove_from_queue(song_index)
+#        Music.remove_from_queue(0)
         return await ctx.followup.send(f"Skipped {song.title}.")
       
   async def queue(ctx: discord.Interaction, choices: discord.app_commands.Choice[str]):

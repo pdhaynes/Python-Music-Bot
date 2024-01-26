@@ -7,7 +7,7 @@ music_download_path = "storage/music/"
 
 class YTDownloader:
   def __init__(self):
-    self.restricted_chars = ["?", "/", "\\", "(", ")", "|"]
+    self.restricted_chars = ["?", "/", "\\", "(", ")", "|", '"', "'"]
 
   async def check_for_valid_link(self, link):
     youtube_regex = r"[https.:\/\/www.youtube.com\/watch?v=[A-Z-a-z0-9]"
